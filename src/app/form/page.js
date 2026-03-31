@@ -1820,12 +1820,12 @@ export default function PatientForm({ onSuccess, user }) {
             monthlyRent: schedule.map(({ month, dueDate, amount, status, updatedAt }) => ({ month, dueDate, amount, status, updatedAt })),
         };
         try {
-            // const res = await fetch("/api/patients", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json", "x-api-key": process.env.NEXT_PUBLIC_API_KEY },
-            //     body: JSON.stringify(payload),
-            // });
-            // if (!res.ok) throw new Error(await res.text());
+            const res = await fetch("/api/patients", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "x-api-key": process.env.NEXT_PUBLIC_API_KEY },
+                body: JSON.stringify(payload),
+            });
+            if (!res.ok) throw new Error(await res.text());
             generatePatientPDF(payload, schedule, {
                 doctorName,
                 machineName,
