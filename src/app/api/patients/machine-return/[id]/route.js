@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import connectToDatabase from "@/lib/DB_CONNECTION";
 import Patient from "@/models/Patient";
 import Machine from "@/models/Machine";
+import "@/models/Patient";
+import "@/models/Machine";
+import "@/models/Doctor";
+import "@/models/Employee";
 
 // export async function PATCH(request, { params }) {
 //     try {

@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import connectToDatabase from "@/lib/DB_CONNECTION";
 import Patient from "@/models/Patient";
+import "@/models/Patient";
+import "@/models/Machine";
+import "@/models/Doctor";
+import "@/models/Employee";
 
 export async function GET(request) {
     try {

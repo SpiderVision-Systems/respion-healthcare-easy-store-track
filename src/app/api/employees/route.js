@@ -1,5 +1,9 @@
 import connectToDatabase from "@/lib/DB_CONNECTION";
 import Employee from "@/models/Employee";
+import "@/models/Patient";
+import "@/models/Machine";
+import "@/models/Doctor";
+import "@/models/Employee";
 
 import bcrypt from "bcrypt";
 

@@ -1,5 +1,9 @@
 import connectToDatabase from "@/lib/DB_CONNECTION";
 import Patient from "@/models/Patient";
+import "@/models/Patient";
+import "@/models/Machine";
+import "@/models/Doctor";
+import "@/models/Employee";
 
 
 // GET single patient
