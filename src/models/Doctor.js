@@ -6,7 +6,12 @@ const doctorSchema = new mongoose.Schema({
     email: String,
     phone: { type: String, required: true, index: true },
     hospitalName: String,
-    specialization: { type: String, index: true }
+    specialization: { type: String, index: true },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+        index: true
+    }
 
 }, { timestamps: true });
 

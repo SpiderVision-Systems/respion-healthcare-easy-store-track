@@ -8,7 +8,7 @@ export async function GET() {
     try {
         await connectToDatabase();
 
-        const machines = await Machine.find().sort({ createdAt: -1 });
+        const machines = await Machine.find({ isDeleted: false }).sort({ createdAt: -1 });
 
         return NextResponse.json(machines);
     } catch (error) {
@@ -51,7 +51,7 @@ export async function PUT(req) {
         const machine = await Machine.findByIdAndUpdate(
             body.id,
             body,
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         return NextResponse.json(machine);
@@ -65,6 +65,28 @@ export async function PUT(req) {
 
 
 
+// // DELETE MACHINE
+// export async function DELETE(req) {
+//     try {
+//         await connectToDatabase();
+
+//         const { id } = await req.json();
+
+//         await Machine.findByIdAndDelete(id);
+
+//         return NextResponse.json({
+//             message: "Machine deleted"
+//         });
+
+//     } catch (error) {
+//         return NextResponse.json(
+//             { message: "Delete failed" },
+//             { status: 500 }
+//         );
+//     }
+// }
+
+
 // DELETE MACHINE
 export async function DELETE(req) {
     try {
@@ -72,13 +94,33 @@ export async function DELETE(req) {
 
         const { id } = await req.json();
 
-        await Machine.findByIdAndDelete(id);
+        if (!id) {
+            return NextResponse.json(
+                { message: "Machine ID required" },
+                { status: 400 }
+            );
+        }
+
+        const deleted = await Machine.findByIdAndUpdate(
+            id,
+            { isDeleted: true },
+            { returnDocument: 'after' }
+        );
+
+        if (!deleted) {
+            return NextResponse.json(
+                { message: "Machine not found" },
+                { status: 404 }
+            );
+        }
 
         return NextResponse.json({
-            message: "Machine deleted"
+            message: "Machine deleted (soft)"
         });
 
     } catch (error) {
+        console.error("DELETE Machine Error:", error);
+
         return NextResponse.json(
             { message: "Delete failed" },
             { status: 500 }

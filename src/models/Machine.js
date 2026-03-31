@@ -16,6 +16,11 @@ const machineSchema = new mongoose.Schema({
         type: String,
         enum: ["available", "in_use", "reserved", "maintenance", "broken"],
         default: "available"
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+        index: true
     }
 }, { timestamps: true });
 

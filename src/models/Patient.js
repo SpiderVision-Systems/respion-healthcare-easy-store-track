@@ -71,6 +71,11 @@ const patientSchema = new mongoose.Schema(
 
         // ─── Rent Schedule ────────────────────────
         monthlyRent: [rentScheduleSchema],
+        isDeleted: {
+            type: Boolean,
+            default: false,
+            index: true,
+        },
     },
     { timestamps: true }
 );

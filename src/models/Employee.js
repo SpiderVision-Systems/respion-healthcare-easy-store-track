@@ -8,6 +8,11 @@ const employeeSchema = new mongoose.Schema({
     password: { type: String, select: false },
     status: { type: String, enum: ["Active", "On-Leave", "Inactive"], default: "Active" },
     role: { type: String },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+        index: true
+    }
 
 
 }, { timestamps: true });

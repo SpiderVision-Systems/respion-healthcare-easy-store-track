@@ -18,7 +18,7 @@ export async function POST(req) {
         }
 
         // find employee (include password)
-        const employee = await Employee.findOne({ email }).select("+password");
+        const employee = await Employee.findOne({ email, isDeleted: false }).select("+password");
 
         if (!employee) {
             return NextResponse.json(

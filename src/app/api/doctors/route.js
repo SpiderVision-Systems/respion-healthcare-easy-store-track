@@ -8,7 +8,7 @@ export async function GET(req) {
 
         await connectToDatabase();
 
-        const doctors = await Doctor.find().sort({ createdAt: -1 });
+        const doctors = await Doctor.find({ isDeleted: false }).sort({ createdAt: -1 });
 
         return new Response(JSON.stringify(doctors), { status: 200 });
 
@@ -79,7 +79,7 @@ export async function PUT(req) {
         const updatedDoctor = await Doctor.findByIdAndUpdate(
             id,
             updateData,
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!updatedDoctor)
@@ -104,42 +104,85 @@ export async function PUT(req) {
 
 
 // DELETE /api/doctors
+// export async function DELETE(req) {
+//     try {
+
+//         await connectToDatabase();
+
+//         const body = await req.json();
+
+//         const { id } = body;
+
+//         if (!id)
+//             return new Response(
+//                 JSON.stringify({ error: "Doctor ID required" }),
+//                 { status: 400 }
+//             );
+
+//         const deleted = await Doctor.findByIdAndDelete(id);
+
+//         if (!deleted)
+//             return new Response(
+//                 JSON.stringify({ error: "Doctor not found" }),
+//                 { status: 404 }
+//             );
+
+//         return new Response(
+//             JSON.stringify({ message: "Doctor deleted successfully" }),
+//             { status: 200 }
+//         );
+
+//     } catch (error) {
+
+//         console.error("DELETE Doctor Error:", error);
+
+//         return new Response(
+//             JSON.stringify({ error: "Failed to delete doctor" }),
+//             { status: 500 }
+//         );
+
+//     }
+// }
+
+
 export async function DELETE(req) {
     try {
-
         await connectToDatabase();
 
         const body = await req.json();
-
         const { id } = body;
 
-        if (!id)
+        if (!id) {
             return new Response(
                 JSON.stringify({ error: "Doctor ID required" }),
                 { status: 400 }
             );
+        }
 
-        const deleted = await Doctor.findByIdAndDelete(id);
+        const deleted = await Doctor.findByIdAndUpdate(
+            id,
+            { isDeleted: true },
+            { returnDocument: 'after' }
+        );
 
-        if (!deleted)
+        if (!deleted) {
             return new Response(
                 JSON.stringify({ error: "Doctor not found" }),
                 { status: 404 }
             );
+        }
 
         return new Response(
-            JSON.stringify({ message: "Doctor deleted successfully" }),
+            JSON.stringify({ message: "Doctor deleted (soft) successfully" }),
             { status: 200 }
         );
 
     } catch (error) {
-
         console.error("DELETE Doctor Error:", error);
 
         return new Response(
             JSON.stringify({ error: "Failed to delete doctor" }),
             { status: 500 }
         );
-
     }
 }

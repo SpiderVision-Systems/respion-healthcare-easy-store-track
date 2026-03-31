@@ -11,7 +11,7 @@ import bcrypt from "bcrypt";
 export async function GET(req) {
     try {
         await connectToDatabase();
-        const employees = await Employee.find();
+        const employees = await Employee.find({ isDeleted: false }).sort({ createdAt: -1 });
         return new Response(JSON.stringify(employees), { status: 200 });
     } catch (error) {
         console.error("GET Employees Error:", error);
@@ -91,7 +91,7 @@ export async function PUT(req) {
 
         if (!id) return new Response(JSON.stringify({ error: "Employee ID required" }), { status: 400 });
 
-        const updatedEmployee = await Employee.findByIdAndUpdate(id, updateData, { new: true });
+        const updatedEmployee = await Employee.findByIdAndUpdate(id, updateData, { returnDocument: 'after' });
         if (!updatedEmployee) return new Response(JSON.stringify({ error: "Employee not found" }), { status: 404 });
 
         return new Response(JSON.stringify(updatedEmployee), { status: 200 });
@@ -101,21 +101,68 @@ export async function PUT(req) {
     }
 }
 
+// // DELETE /api/employees
+// export async function DELETE(req) {
+//     try {
+//         await connectToDatabase();
+//         const body = await req.json();
+//         const { id } = body;
+
+//         if (!id) return new Response(JSON.stringify({ error: "Employee ID required" }), { status: 400 });
+
+//         const deleted = await Employee.findByIdAndDelete(id);
+//         if (!deleted) return new Response(JSON.stringify({ error: "Employee not found" }), { status: 404 });
+
+//         return new Response(JSON.stringify({ message: "Employee deleted successfully" }), { status: 200 });
+//     } catch (error) {
+//         console.error("DELETE Employee Error:", error);
+//         return new Response(JSON.stringify({ error: "Failed to delete employee" }), { status: 500 });
+//     }
+// }
+
+
 // DELETE /api/employees
 export async function DELETE(req) {
     try {
         await connectToDatabase();
+
         const body = await req.json();
         const { id } = body;
 
-        if (!id) return new Response(JSON.stringify({ error: "Employee ID required" }), { status: 400 });
+        if (!id) {
+            return new Response(
+                JSON.stringify({ error: "Employee ID required" }),
+                { status: 400 }
+            );
+        }
 
-        const deleted = await Employee.findByIdAndDelete(id);
-        if (!deleted) return new Response(JSON.stringify({ error: "Employee not found" }), { status: 404 });
+        const deleted = await Employee.findByIdAndUpdate(
+            id,
+            { isDeleted: true },
+            { returnDocument: 'after' }
+        );
 
-        return new Response(JSON.stringify({ message: "Employee deleted successfully" }), { status: 200 });
+        console.log(deleted);
+
+
+        if (!deleted) {
+            return new Response(
+                JSON.stringify({ error: "Employee not found" }),
+                { status: 404 }
+            );
+        }
+
+        return new Response(
+            JSON.stringify({ message: "Employee deleted (soft) successfully" }),
+            { status: 200 }
+        );
+
     } catch (error) {
         console.error("DELETE Employee Error:", error);
-        return new Response(JSON.stringify({ error: "Failed to delete employee" }), { status: 500 });
+
+        return new Response(
+            JSON.stringify({ error: "Failed to delete employee" }),
+            { status: 500 }
+        );
     }
 }

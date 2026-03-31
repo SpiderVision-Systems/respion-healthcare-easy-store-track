@@ -55,7 +55,7 @@ export async function PUT(req, { params }) {
         const updatedPatient = await Patient.findByIdAndUpdate(
             id,
             body,
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!updatedPatient) {
