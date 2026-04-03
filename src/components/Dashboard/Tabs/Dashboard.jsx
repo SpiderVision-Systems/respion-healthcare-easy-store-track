@@ -1169,21 +1169,30 @@ function transformPatient(p) {
     const returnDate = p.returnDate ? new Date(p.returnDate).toISOString().split("T")[0] : null;
     const isReturned = !!p.isReturned;
 
-    const allPaid = (monthlyRent.length > 0 && pendingMonths.length === 0) || p.paymentType === "fully_paid";
+    // const allPaid = (monthlyRent.length > 0 && pendingMonths.length === 0) || p.paymentType === "fully_paid";
 
+    // 1. Fix allPaid — only true if monthlyRent exists AND all paid, NOT for fully_paid type
+    const allPaid = monthlyRent.length > 0 && pendingMonths.length === 0;
+
+    // 2. Fix status — move the allPaid check BEFORE the overdue check, 
+    //    but only mark Completed if NOT overdue on return
     let status = "Active";
     if (isReturned) {
         status = "Completed";
-    } else if (paymentDueDate && diffDays(paymentDueDate) < 0 && paymentDue > 0) {
-        status = "Overdue";
+    } else if (
+        (paymentDueDate && diffDays(paymentDueDate) < 0 && paymentDue > 0) ||
+        (returnDate && diffDays(returnDate) < 0)
+    ) {
+        status = "Overdue";   // ← Overdue wins over allPaid
     } else if (
         (paymentDueDate && diffDays(paymentDueDate) <= 7 && paymentDue > 0) ||
         (returnDate && diffDays(returnDate) >= 0 && diffDays(returnDate) <= 7)
     ) {
         status = "Due Soon";
+    } else if (allPaid || p.paymentType === "fully_paid") {
+        status = "Completed"; // ← only reaches here if NOT overdue
     }
-    if (allPaid) status = "Completed";
-
+    // DELETE the old: if (allPaid) status = "Completed";
     return {
         _raw: p,
         id: p._id,
@@ -1255,7 +1264,7 @@ function StatusBadge({ status, allPaid, isReturned }) {
     if (status === "Completed" && allPaid) {
         return (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200">
-                <CheckCircle2 size={10} /> Fully Paid
+                <CheckCircle2 size={10} /> FullyPaid
             </span>
         );
     }
@@ -2025,7 +2034,12 @@ export default function PatientsTable() {
 
     const filtered = useMemo(() => {
         let list = records;
-        if (statusFilter !== "all") list = list.filter(r => r.status === statusFilter);
+        // if (statusFilter !== "all") list = list.filter(r => r.status === statusFilter);
+        if (statusFilter === "Active") {
+            list = list.filter(r => !r.isReturned && r.status !== "Completed");
+        } else if (statusFilter !== "all") {
+            list = list.filter(r => r.status === statusFilter);
+        }
         if (typeFilter === "rent") list = list.filter(r => r.paymentType === "rent");
         else if (typeFilter === "fully_paid") list = list.filter(r => r.paymentType === "fully_paid");
         else if (typeFilter === "returned") list = list.filter(r => r.isReturned);
@@ -2079,16 +2093,26 @@ export default function PatientsTable() {
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5 items-center">
-                        {[{ key: "all", label: "All" }, { key: "Active", label: "Active" }, { key: "Due Soon", label: "Due Soon" }, { key: "Overdue", label: "Overdue" }, { key: "Completed", label: "Completed" }].map(f => (
+                        {[{ key: "all", label: "All" },
+                        { key: "Active", label: "Active" },
+                        { key: "Due Soon", label: "Due Soon" },
+                        { key: "Overdue", label: "Overdue" },
+                        { key: "Completed", label: "Returned" }
+                        ].map(f => (
                             <button key={f.key} onClick={() => setStatusFilter(f.key)} className={`text-xs px-3 py-1.5 rounded-full font-semibold border transition-colors flex items-center gap-1 ${statusFilter === f.key ? "bg-teal-600 text-white border-teal-600" : "bg-white text-gray-600 border-gray-200 hover:border-teal-300"}`}>
                                 {f.label}
                                 {f.key !== "all" && statusCounts[f.key] > 0 && <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ${statusFilter === f.key ? "bg-teal-500 text-white" : "bg-slate-100 text-slate-500"}`}>{statusCounts[f.key]}</span>}
                             </button>
                         ))}
-                        <span className="w-px h-4 bg-gray-200 mx-0.5" />
-                        {[{ key: "all", label: "All Types" }, { key: "rent", label: "Rent" }, { key: "fully_paid", label: "Fully Paid" }, { key: "returned", label: "Returned" }].map(f => (
+                        {/* <span className="w-px h-4 bg-gray-200 mx-0.5" />
+                        {[
+                            { key: "all", label: "All Types" },
+                            { key: "rent", label: "Rent" },
+                            { key: "fully_paid", label: "Fully Paid" },
+                            { key: "returned", label: "Returned" }
+                        ].map(f => (
                             <button key={f.key} onClick={() => setTypeFilter(f.key)} className={`text-xs px-3 py-1.5 rounded-full font-semibold border transition-colors ${typeFilter === f.key ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300"}`}>{f.label}</button>
-                        ))}
+                        ))} */}
                         <span className="sm:hidden text-xs text-gray-400 ml-auto">{filtered.length} / {records.length}</span>
                     </div>
                 </div>
