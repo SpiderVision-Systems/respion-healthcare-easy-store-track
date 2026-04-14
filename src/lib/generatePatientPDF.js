@@ -2630,21 +2630,21 @@ function page1(doc, D, sch) {
   y += TBAR_H + 5;
 
   // ── Signature strip ───────────────────────────────────────────────────────
-  hRule(doc, M, y, CW, C.rule, 0.25);
-  y += 6;
-  const sigW = CW / 2;
-  ['Receiver\'s Signature', 'Installed By'].forEach((lb, i) => {
-    const sx = M + i * sigW;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); sc(doc, C.inkFaint);
-    txt(doc, lb, sx + sigW / 2, y, { align: 'center' });
-    sd(doc, C.rule); doc.setLineWidth(0.25);
-    doc.line(sx + 8, y + 9, sx + sigW - 8, y + 9);
-    if (i === 1) {
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); sc(doc, C.ink);
-      txt(doc, D.employeeName || '', sx + sigW / 2, y + 8, { align: 'center' });
-    }
-    if (i > 0) { sd(doc, C.rule); doc.setLineWidth(0.15); doc.line(sx, y - 2, sx, y + 11); }
-  });
+  // hRule(doc, M, y, CW, C.rule, 0.25);
+  // y += 6;
+  // const sigW = CW / 2;
+  // ['Receiver\'s Signature', 'Installed By'].forEach((lb, i) => {
+  //   const sx = M + i * sigW;
+  //   doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); sc(doc, C.inkFaint);
+  //   txt(doc, lb, sx + sigW / 2, y, { align: 'center' });
+  //   sd(doc, C.rule); doc.setLineWidth(0.25);
+  //   doc.line(sx + 8, y + 9, sx + sigW - 8, y + 9);
+  //   if (i === 1) {
+  //     doc.setFont('helvetica', 'normal'); doc.setFontSize(7); sc(doc, C.ink);
+  //     txt(doc, D.employeeName || '', sx + sigW / 2, y + 8, { align: 'center' });
+  //   }
+  //   if (i > 0) { sd(doc, C.rule); doc.setLineWidth(0.15); doc.line(sx, y - 2, sx, y + 11); }
+  // });
 
   // ── Footer ────────────────────────────────────────────────────────────────
   box(doc, 0, 285, W, 12, C.teal);

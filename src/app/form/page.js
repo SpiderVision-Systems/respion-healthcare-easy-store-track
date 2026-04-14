@@ -1,6 +1,7 @@
 // "use client";
 // import { useState, useEffect, useMemo } from "react";
 // import { generatePatientPDF } from "@/lib/generatePatientPDF";
+// import { useRouter } from "next/navigation";
 
 // // ─── Helpers ──────────────────────────────────────────────────────────────────
 // const MONTH_NAMES = [
@@ -201,16 +202,25 @@
 // }
 
 // // ─── Review row ───────────────────────────────────────────────────────────────
-// function ReviewRow({ label, value }) {
+// function ReviewRow({ label, value, badge }) {
 //     return (
 //         <div className="flex justify-between items-start py-2.5 border-b border-slate-50 last:border-0 gap-4">
 //             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex-shrink-0">{label}</span>
-//             <span className="text-sm font-medium text-slate-700 text-right">{value || <span className="text-slate-300">—</span>}</span>
+//             <span className="text-sm font-medium text-slate-700 text-right">
+//                 {badge ? (
+//                     <span className={`inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2.5 py-0.5 ${badge === "yes"
+//                         ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+//                         : "bg-rose-50 text-rose-700 border border-rose-200"
+//                         }`}>
+//                         {badge === "yes" ? "✓ Yes" : "✗ No"}
+//                     </span>
+//                 ) : value || <span className="text-slate-300">—</span>}
+//             </span>
 //         </div>
 //     );
 // }
 
-// // ─── Instalment table ─────────────────────────────────────────────────────────
+// // ─── Rental table ─────────────────────────────────────────────────────────
 // function InstalmentTable({ schedule, onToggle, isDailyMode }) {
 //     const paidCount = schedule.filter(r => r.status === "paid").length;
 //     const pendingCount = schedule.filter(r => r.status === "pending").length;
@@ -317,6 +327,7 @@
 // // MAIN COMPONENT
 // // ═════════════════════════════════════════════════════════════════════════════
 // export default function PatientForm({ onSuccess, user }) {
+//     const router = useRouter();
 //     const [step, setStep] = useState(1);
 
 //     // Step 1 — Patient Info
@@ -364,7 +375,6 @@
 //     useEffect(() => {
 //         if (step !== 2) return;
 
-//         // Fetch doctors
 //         setDoctorsLoading(true);
 //         fetch("/api/doctors", { headers: { "x-api-key": process.env.NEXT_PUBLIC_API_KEY } })
 //             .then(r => r.json())
@@ -372,7 +382,6 @@
 //             .catch(() => setDoctors([]))
 //             .finally(() => setDoctorsLoading(false));
 
-//         // Fetch employees
 //         setEmployeesLoading(true);
 //         fetch("/api/employees", { headers: { "x-api-key": process.env.NEXT_PUBLIC_API_KEY } })
 //             .then(r => r.json())
@@ -384,7 +393,7 @@
 //     // ── Fetch branch machines when branch is selected ──────────────────────────
 //     useEffect(() => {
 //         if (!selectedBranch) { setBranchMachines([]); return; }
-//         setMachineId(""); // reset machine when branch changes
+//         setMachineId("");
 //         setBranchMachinesLoading(true);
 //         fetch(`/api/branches/machines?branch=${encodeURIComponent(selectedBranch)}`, {
 //             headers: { "x-api-key": process.env.NEXT_PUBLIC_API_KEY }
@@ -434,7 +443,111 @@
 //         if (schedule.length > 0) setMachineReturnDate(schedule[schedule.length - 1].dueDate);
 //     }, [schedule]);
 
+
+//     // useEffect(() => {
+//     //     const checkAuth = async () => {
+//     //         const token = localStorage.getItem("token");
+
+//     //         if (!token) {
+//     //             router.replace("/login");
+//     //             return;
+//     //         }
+
+//     //         try {
+//     //             const res = await fetch("/api/auth/verify-token", {
+//     //                 method: "POST",
+//     //                 headers: {
+//     //                     "Content-Type": "application/json",
+//     //                     Authorization: `Bearer ${token}`,
+//     //                     "x-api-key": process.env.NEXT_PUBLIC_API_KEY,
+//     //                 },
+//     //             });
+
+//     //             const data = await res.json();
+
+//     //             if (!data.success) {
+//     //                 localStorage.removeItem("token");
+//     //                 router.replace("/login");
+//     //                 return;
+//     //             }
+
+//     //             const role = data.user.role;
+//     //             setUser(data.user);
+
+//     //             // 🔥 ROLE BASED REDIRECT
+//     //             if (role === "Admin1") {
+//     //                 return;
+//     //             } else if (role === "employee") {
+//     //                 return;
+//     //             } else {
+//     //                 localStorage.removeItem("token");
+//     //                 router.replace("/login");
+//     //             }
+
+//     //         } catch (err) {
+//     //             console.log("Token verify error:", err);
+//     //             localStorage.removeItem("token");
+//     //             router.replace("/login");
+//     //         } finally {
+//     //             setLoading(false);
+//     //         }
+//     //     };
+
+//     //     checkAuth();
+//     // }, [router]);
+
 //     // ── Summary values ─────────────────────────────────────────────────────────
+
+//     useEffect(() => {
+//         const checkAuth = async () => {
+//             const token = localStorage.getItem("token");
+
+//             if (!token) {
+//                 router.replace("/login");
+//                 return;
+//             }
+
+//             try {
+//                 const res = await fetch("/api/auth/verify-token", {
+//                     method: "POST",
+//                     headers: {
+//                         "Content-Type": "application/json",
+//                         Authorization: `Bearer ${token}`,
+//                         "x-api-key": process.env.NEXT_PUBLIC_API_KEY,
+//                     },
+//                 });
+
+//                 const data = await res.json();
+
+//                 // ❌ invalid token
+//                 if (!data.success) {
+//                     localStorage.removeItem("token");
+//                     router.replace("/login");
+//                     return;
+//                 }
+
+//                 const role = data.user?.role;
+//                 // ✅ allow only these roles
+//                 if (role === "Admin1" || role === "employee") {
+//                     return; // do nothing ✅
+//                 }
+
+//                 // ❌ any other role → logout
+//                 localStorage.removeItem("token");
+//                 router.replace("/login");
+
+//             } catch (err) {
+//                 console.log("Token verify error:", err);
+//                 localStorage.removeItem("token");
+//                 router.replace("/login");
+//             } finally {
+//                 setLoading(false);
+//             }
+//         };
+
+//         checkAuth();
+//     }, [router]);
+
 //     const paidRentTotal = useMemo(() => schedule.filter(r => r.status === "paid").reduce((s, r) => s + r.amount, 0), [schedule]);
 //     const pendingRentTotal = useMemo(() => schedule.filter(r => r.status === "pending").reduce((s, r) => s + r.amount, 0), [schedule]);
 //     const nextBillingDate = schedule.find(r => r.status === "pending")?.dueDate ?? null;
@@ -476,10 +589,9 @@
 //             if (!duration) e.duration = "Please select a rental duration";
 //             if (!rentPerPeriod || rentPerPeriod <= 0) e.perPeriodRent = `Enter the ${isDailyMode ? "per day" : "per month"} rent amount`;
 //             if (security < 0) e.securityAmount = "Security amount cannot be negative";
-//             if (!paymentMode) errors.paymentMode = "Select payment mode";
-//             if (paymentMode === "online" && !paymentAcc) {
-//                 errors.paymentAcc = "Select account";
-//             }
+//             // ✅ FIX: use `e` not `errors` for paymentMode and paymentAcc
+//             if (!paymentMode) e.paymentMode = "Select payment mode";
+//             if (paymentMode === "online" && !paymentAcc.trim()) e.paymentAcc = "Enter account / UPI details";
 //             if (!startDate) e.startDate = "Please select a start date";
 //         }
 //         return e;
@@ -528,16 +640,15 @@
 //                 body: JSON.stringify(payload),
 //             });
 //             if (!res.ok) throw new Error(await res.text());
-//             // ✅ NEW: auto-generate PDF immediately after save
 //             generatePatientPDF(payload, schedule, {
-//                 doctorName: doctorName,
-//                 machineName: machineName,
-//                 employeeName: employeeName,
-//                 durationLabel: durationLabel,
-//                 slNo: "—",   // replace with actual SL no from API response if available
+//                 doctorName,
+//                 machineName,
+//                 employeeName,
+//                 durationLabel,
+//                 slNo
 //             });
 //             setSubmitted(true);
-//             onSuccess?.(payload);
+//             // onSuccess?.(payload);
 //         } catch (err) {
 //             console.error(err);
 //             setSubmitted(true);
@@ -553,18 +664,28 @@
 //         setDoctorId(""); setOtherSource(""); setMachineId(""); setEmployeeId(""); setOtherEmployee("");
 //         setSelectedBranch(""); setBranchMachines([]);
 //         setAccessories([{ name: "" }]);
-//         setPerPeriodRent(""); setSecurityAmount(""); setDuration("");
+//         setPerPeriodRent(""); setSecurityAmount(""); setPaymentMode(""); setPaymentAcc(""); setDuration("");
 //         setStartDate(todayISO()); setMachineReturnDate("");
 //         setSchedule([]); setErrors({}); setSubmitted(false);
 //     }
 
 //     // ── Lookup helpers ─────────────────────────────────────────────────────────
-//     const doctorName = doctorId === "others" ? (otherSource || "Others") : (doctors.find(d => d._id === doctorId)?.name || "—");
+//     const doctorName = doctorId === "others"
+//         ? (otherSource ? `Others (${otherSource})` : "Others")
+//         : (doctors.find(d => d._id === doctorId)?.name || "—");
 //     const machineName = branchMachines.find(m => m._id === machineId)?.name || "—";
-//     const employeeName = employeeId === "others" ? (otherEmployee || "Others") : (employees.find(e => e._id === employeeId)?.name || "—");
+//     const slNo = branchMachines.find(m => m._id === machineId)?.serialNumber || "—";
+//     const employeeName = employeeId === "others"
+//         ? (otherEmployee ? `Others (${otherEmployee})` : "Others")
+//         : (employees.find(e => e._id === employeeId)?.name || "—");
 //     const durationLabel = duration
 //         ? isDailyMode ? `${durationNum} day${durationNum > 1 ? "s" : ""}` : `${durationNum} month${durationNum > 1 ? "s" : ""}`
 //         : "—";
+//     const paymentModeLabel = paymentMode === "cash"
+//         ? "Cash"
+//         : paymentMode === "online"
+//             ? `Online${paymentAcc ? ` — ${paymentAcc}` : ""}`
+//             : "—";
 
 //     // ── Success screen ─────────────────────────────────────────────────────────
 //     if (submitted) {
@@ -701,39 +822,18 @@
 //                                     <ErrorMsg msg={errors.address} />
 //                                 </div>
 
-
 //                                 <div className="p-4 border rounded-lg bg-white shadow-sm">
-
-//                                     <h3 className="font-semibold text-gray-800 mb-2">
-//                                         Google Review Status
-//                                     </h3>
-
+//                                     <h3 className="font-semibold text-gray-800 mb-2">Google Review Status</h3>
 //                                     <div className="flex gap-4 items-center">
-
-
 //                                         <label className="flex items-center gap-2">
-//                                             <input
-//                                                 type="radio"
-//                                                 name="review"
-//                                                 checked={review === true}
-//                                                 onChange={() => setReview(true)}
-//                                             />
+//                                             <input type="radio" name="review" checked={review === true} onChange={() => setReview(true)} />
 //                                             <span className="text-green-600 font-medium">Yes</span>
 //                                         </label>
-
-
 //                                         <label className="flex items-center gap-2">
-//                                             <input
-//                                                 type="radio"
-//                                                 name="review"
-//                                                 checked={review === false}
-//                                                 onChange={() => setReview(false)}
-//                                             />
+//                                             <input type="radio" name="review" checked={review === false} onChange={() => setReview(false)} />
 //                                             <span className="text-red-500 font-medium">No</span>
 //                                         </label>
 //                                     </div>
-
-//                                     {/* INFO MESSAGE */}
 //                                     {!review && (
 //                                         <p className="mt-3 text-sm text-orange-600">
 //                                             ⚠ Please collect Google review during machine return/uninstall.
@@ -747,7 +847,6 @@
 //                         {step === 2 && (
 //                             <div className="flex flex-col gap-5">
 
-//                                 {/* Referred By / Doctor */}
 //                                 <div>
 //                                     <FieldLabel required>Referred By / Lead By</FieldLabel>
 //                                     {doctorsLoading ? (
@@ -775,15 +874,10 @@
 //                                     )}
 //                                 </div>
 
-//                                 {/* ── Branch picker ── */}
 //                                 <div>
 //                                     <FieldLabel required>Region / Branch</FieldLabel>
 //                                     <p className="text-[11px] text-slate-400 mb-2">Select a branch to see available machines</p>
-//                                     <SelectInput
-//                                         value={selectedBranch}
-//                                         onChange={e => setSelectedBranch(e.target.value)}
-//                                         error={errors.selectedBranch}
-//                                     >
+//                                     <SelectInput value={selectedBranch} onChange={e => setSelectedBranch(e.target.value)} error={errors.selectedBranch}>
 //                                         <option value="">Choose a branch…</option>
 //                                         {["Odisha", "Kolkata", "Ranchi", "Patna", "Bangalore"].map(b => (
 //                                             <option key={b} value={b}>{b}</option>
@@ -792,7 +886,6 @@
 //                                     <ErrorMsg msg={errors.selectedBranch} />
 //                                 </div>
 
-//                                 {/* ── Machine (unlocked after branch) ── */}
 //                                 <div>
 //                                     <FieldLabel required>Machine</FieldLabel>
 //                                     {!selectedBranch ? (
@@ -824,7 +917,6 @@
 //                                     <ErrorMsg msg={errors.machineId} />
 //                                 </div>
 
-//                                 {/* Accessories */}
 //                                 <div>
 //                                     <div className="flex items-center justify-between mb-2">
 //                                         <FieldLabel>Extra Accessories <span className="text-slate-400 font-normal normal-case tracking-normal text-xs">(optional)</span></FieldLabel>
@@ -847,7 +939,6 @@
 //                                     ))}
 //                                 </div>
 
-//                                 {/* Installed By / Employee */}
 //                                 {!user && (
 //                                     <div>
 //                                         <FieldLabel required>Installed By</FieldLabel>
@@ -857,10 +948,7 @@
 //                                             </div>
 //                                         ) : (
 //                                             <SelectInput value={employeeId}
-//                                                 onChange={e => {
-//                                                     setEmployeeId(e.target.value);
-//                                                     if (e.target.value !== "others") setOtherEmployee("");
-//                                                 }}
+//                                                 onChange={e => { setEmployeeId(e.target.value); if (e.target.value !== "others") setOtherEmployee(""); }}
 //                                                 error={errors.employeeId}>
 //                                                 <option value="">Select employee</option>
 //                                                 {employees.map(em => <option key={em._id} value={em._id}>{em.name}</option>)}
@@ -897,39 +985,32 @@
 //                                     }} error={errors.duration} />
 //                                     <ErrorMsg msg={errors.duration} />
 //                                 </div>
+
 //                                 <div>
 //                                     <div className="flex items-center gap-2 mb-3">
-//                                         <div className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-//                                             2
-//                                         </div>
+//                                         <div className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">2</div>
 //                                         <p className="text-sm font-bold text-slate-700">Payment Mode</p>
 //                                     </div>
-
 //                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-//                                         {/* Payment Mode */}
 //                                         <div>
 //                                             <FieldLabel required>Payment Type</FieldLabel>
-//                                             <select
+//                                             <SelectInput
 //                                                 value={paymentMode}
 //                                                 onChange={(e) => {
 //                                                     setPaymentMode(e.target.value);
 //                                                     if (e.target.value !== "online") setPaymentAcc("");
 //                                                 }}
-//                                                 className="w-full border rounded-lg px-3 py-2 text-sm"
+//                                                 error={errors.paymentMode}
 //                                             >
 //                                                 <option value="">Select</option>
 //                                                 <option value="cash">Cash</option>
 //                                                 <option value="online">Online</option>
-//                                             </select>
-
+//                                             </SelectInput>
 //                                             <ErrorMsg msg={errors.paymentMode} />
 //                                         </div>
-
-//                                         {/* Account Input (only for online) */}
 //                                         {paymentMode === "online" && (
 //                                             <div>
 //                                                 <FieldLabel required>Account / UPI / Bank Details</FieldLabel>
-
 //                                                 <TextInput
 //                                                     type="text"
 //                                                     placeholder="e.g. SBI A/c 1234 / GPay / PhonePe / UPI ID"
@@ -937,12 +1018,12 @@
 //                                                     onChange={(e) => setPaymentAcc(e.target.value)}
 //                                                     error={errors.paymentAcc}
 //                                                 />
-
 //                                                 <ErrorMsg msg={errors.paymentAcc} />
 //                                             </div>
 //                                         )}
 //                                     </div>
 //                                 </div>
+
 //                                 <div>
 //                                     <div className="flex items-center gap-2 mb-3">
 //                                         <div className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">3</div>
@@ -989,7 +1070,7 @@
 //                                                 <p className="text-sm font-bold text-teal-800">Grand Total</p>
 //                                                 {durationNum > 0 && grandTotal > 0 && (
 //                                                     <p className="text-[10px] text-teal-600 font-medium mt-0.5">
-//                                                         ÷ {durationNum} {isDailyMode ? "days" : "months"} = {fmt(perInstalment)}/instalment
+//                                                         ÷ {durationNum} {isDailyMode ? "days" : "months"} = {fmt(perInstalment)}/rental
 //                                                         {instalmentRem > 0 && ` (+₹1 first ${instalmentRem})`}
 //                                                     </p>
 //                                                 )}
@@ -1002,7 +1083,7 @@
 //                                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 //                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
 //                                                     </svg>
-//                                                     Security deposit (refundable · not in instalments)
+//                                                     Security deposit (refundable · not in rentals)
 //                                                 </span>
 //                                                 <span className="text-sm font-bold font-mono text-emerald-700">{fmt(security)}</span>
 //                                             </div>
@@ -1028,7 +1109,7 @@
 //                                         <div>
 //                                             <FieldLabel>Machine return date <span className="ml-1 text-amber-500 font-bold normal-case tracking-normal text-[10px]">auto: last due date</span></FieldLabel>
 //                                             <TextInput type="date" value={machineReturnDate} onChange={e => setMachineReturnDate(e.target.value)} />
-//                                             <p className="mt-1 text-[10px] text-slate-400">Auto-set to last instalment date. Adjust if needed.</p>
+//                                             <p className="mt-1 text-[10px] text-slate-400">Auto-set to last rental date. Adjust if needed.</p>
 //                                         </div>
 //                                     </div>
 //                                 </div>
@@ -1036,7 +1117,7 @@
 //                                 {hasCalc && (
 //                                     <div className="flex flex-wrap gap-2">
 //                                         <InfoChip label="Duration" value={durationLabel} color="violet" />
-//                                         <InfoChip label="Per instalment" value={fmt(perInstalment)} color="teal" />
+//                                         <InfoChip label="Per rental" value={fmt(perInstalment)} color="teal" />
 //                                         <InfoChip label="Grand total" value={fmt(grandTotal)} color="rose" />
 //                                         {security > 0 && <InfoChip label="Security" value={fmt(security)} color="emerald" />}
 //                                         {nextBillingDate && <InfoChip label="First billing" value={fmtDateShort(nextBillingDate)} color="amber" />}
@@ -1051,9 +1132,9 @@
 //                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 //                                             </svg>
 //                                             <p className="text-xs text-teal-700 leading-relaxed">
-//                                                 <span className="font-bold">{durationNum} instalment{durationNum > 1 ? "s" : ""} · {fmt(perInstalment)}/instalment · {fmt(grandTotal)} grand total</span>.{" "}
+//                                                 <span className="font-bold">{durationNum} rental{durationNum > 1 ? "s" : ""} · {fmt(perInstalment)}/rental · {fmt(grandTotal)} grand total</span>.{" "}
 //                                                 {isDailyMode ? `Daily billing from ${fmtDateShort(startDate)}.` : `Due on the ${startDate.split("-")[2].replace(/^0/, "")}th of each month.`}
-//                                                 {instalmentRem > 0 && ` First ${instalmentRem} instalment${instalmentRem > 1 ? "s" : ""} are ₹1 more.`}
+//                                                 {instalmentRem > 0 && ` First ${instalmentRem} rental${instalmentRem > 1 ? "s" : ""} are ₹1 more.`}
 //                                             </p>
 //                                         </div>
 //                                         <InstalmentTable schedule={schedule} onToggle={toggleStatus} isDailyMode={isDailyMode} />
@@ -1065,43 +1146,60 @@
 //                         {/* ─── STEP 4: Review & Save ────────────────────────────────── */}
 //                         {step === 4 && (
 //                             <div className="flex flex-col gap-5">
+
+//                                 {/* ── Patient Information ── */}
 //                                 <div>
 //                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Patient Information</p>
 //                                     <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 divide-y divide-slate-100">
 //                                         <ReviewRow label="Name" value={name} />
-//                                         <ReviewRow label="Phone" value={phone} />
-//                                         <ReviewRow label="Alt Phone" value={altPhone} />
+//                                         <ReviewRow label="Primary Phone" value={phone} />
+//                                         <ReviewRow label="Alternate Phone" value={altPhone} />
 //                                         <ReviewRow label="WhatsApp" value={whatsapp} />
-//                                         <ReviewRow label="DOB" value={fmtDateShort(dob)} />
+//                                         <ReviewRow label="Date of Birth" value={fmtDateShort(dob)} />
 //                                         <ReviewRow label="Age" value={age ? `${age} yrs` : "—"} />
 //                                         <ReviewRow label="Address" value={address || "—"} />
+//                                         {/* ✅ ADDED: Google Review status in review */}
+//                                         <ReviewRow label="Google Review" badge={review ? "yes" : "no"} />
 //                                     </div>
 //                                 </div>
+
+//                                 {/* ── Assignment ── */}
 //                                 <div>
 //                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Assignment</p>
 //                                     <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 divide-y divide-slate-100">
+//                                         {/* ✅ FIXED: doctorName now includes otherSource when "others" */}
 //                                         <ReviewRow label="Referred By" value={doctorName} />
 //                                         <ReviewRow label="Branch" value={selectedBranch || "—"} />
 //                                         <ReviewRow label="Machine" value={machineName} />
+//                                         {/* ✅ FIXED: employeeName now includes otherEmployee when "others" */}
 //                                         <ReviewRow label="Installed By" value={employeeName} />
-//                                         {accessories.filter(a => a.name.trim()).map((a, i) => (
-//                                             <ReviewRow key={i} label={`Accessory ${i + 1}`} value={a.name} />
-//                                         ))}
+//                                         {accessories.filter(a => a.name.trim()).length > 0
+//                                             ? accessories.filter(a => a.name.trim()).map((a, i) => (
+//                                                 <ReviewRow key={i} label={`Accessory ${i + 1}`} value={a.name} />
+//                                             ))
+//                                             : <ReviewRow label="Accessories" value="None" />
+//                                         }
 //                                     </div>
 //                                 </div>
+
+//                                 {/* ── Rental Details ── */}
 //                                 <div>
 //                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Rental Details</p>
 //                                     <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 divide-y divide-slate-100">
 //                                         <ReviewRow label="Duration" value={durationLabel} />
 //                                         <ReviewRow label={`Rent per ${isDailyMode ? "day" : "month"}`} value={fmt(rentPerPeriod)} />
-//                                         <ReviewRow label="Grand total" value={fmt(grandTotal)} />
-//                                         <ReviewRow label="Per instalment" value={`${fmt(perInstalment)}${instalmentRem > 0 ? ` (+₹1 first ${instalmentRem})` : ""}`} />
+//                                         <ReviewRow label="Grand Total" value={fmt(grandTotal)} />
+//                                         <ReviewRow label="Per Rental" value={`${fmt(perInstalment)}${instalmentRem > 0 ? ` (+₹1 first ${instalmentRem})` : ""}`} />
 //                                         {security > 0 && <ReviewRow label="Security (refundable)" value={fmt(security)} />}
-//                                         <ReviewRow label="Start date" value={fmtDateShort(startDate)} />
-//                                         <ReviewRow label="Rental ends" value={rentalEndDate ? fmtDateShort(rentalEndDate) : "—"} />
-//                                         {machineReturnDate && <ReviewRow label="Machine return" value={fmtDateShort(machineReturnDate)} />}
+//                                         {/* ✅ ADDED: Payment mode & account details in review */}
+//                                         <ReviewRow label="Payment Mode" value={paymentModeLabel} />
+//                                         <ReviewRow label="Start Date" value={fmtDateShort(startDate)} />
+//                                         <ReviewRow label="Rental Ends" value={rentalEndDate ? fmtDateShort(rentalEndDate) : "—"} />
+//                                         {machineReturnDate && <ReviewRow label="Machine Return" value={fmtDateShort(machineReturnDate)} />}
 //                                     </div>
 //                                 </div>
+
+//                                 {/* ── Recovery progress ── */}
 //                                 <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5">
 //                                     <div className="flex justify-between text-xs text-slate-500 mb-2">
 //                                         <span className="font-semibold">Recovery progress</span>
@@ -1114,6 +1212,8 @@
 //                                         <span className="text-xs font-bold font-mono text-slate-500 w-9 text-right">{progressPct}%</span>
 //                                     </div>
 //                                 </div>
+
+//                                 {/* ── Summary chips ── */}
 //                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
 //                                     {[
 //                                         { label: "Grand total", value: fmt(grandTotal), cls: "text-slate-800" },
@@ -1127,9 +1227,11 @@
 //                                         </div>
 //                                     ))}
 //                                 </div>
+
+//                                 {/* ── Rental schedule ── */}
 //                                 {schedule.length > 0 && (
 //                                     <div>
-//                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Instalment Schedule Preview</p>
+//                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Rental Schedule Preview</p>
 //                                         <InstalmentTable schedule={schedule} onToggle={null} isDailyMode={isDailyMode} />
 //                                     </div>
 //                                 )}
@@ -1181,7 +1283,6 @@
 //         </div>
 //     );
 // }
-
 
 
 "use client";
@@ -1406,7 +1507,7 @@ function ReviewRow({ label, value, badge }) {
     );
 }
 
-// ─── Instalment table ─────────────────────────────────────────────────────────
+// ─── Rental table ─────────────────────────────────────────────────────────
 function InstalmentTable({ schedule, onToggle, isDailyMode }) {
     const paidCount = schedule.filter(r => r.status === "paid").length;
     const pendingCount = schedule.filter(r => r.status === "pending").length;
@@ -1422,14 +1523,14 @@ function InstalmentTable({ schedule, onToggle, isDailyMode }) {
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400" /> {pendingCount} pending
                 </span>
                 <span className="ml-auto text-xs text-slate-400 font-medium font-mono">
-                    {schedule.length} {isDailyMode ? "days" : "months"} · Total {fmt(scheduleTotal)}
+                    {schedule.length} {isDailyMode ? "rental" : "months"} · Total {fmt(scheduleTotal)}
                 </span>
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[500px]">
                     <thead>
                         <tr className="border-b border-slate-100 bg-white">
-                            {["#", isDailyMode ? "Day" : "Month", "Due Date", "Amount", "Status", onToggle ? "Action" : ""].map((h, i) => (
+                            {["#", isDailyMode ? "Period" : "Month", "Due Date", "Amount", "Status", onToggle ? "Action" : ""].map((h, i) => (
                                 <th key={i} className="text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 py-2.5">{h}</th>
                             ))}
                         </tr>
@@ -1596,26 +1697,36 @@ export default function PatientForm({ onSuccess, user }) {
     const durationNum = parseInt(duration.slice(2), 10) || 0;
     const rentPerPeriod = parseInt(perPeriodRent, 10) || 0;
     const security = parseInt(securityAmount, 10) || 0;
-    const rentTotal = rentPerPeriod * durationNum;
+    // ── For daily mode: grandTotal = rentPerPeriod (single payment, no multiplication)
+    // ── For month mode: grandTotal = rentPerPeriod * durationNum (unchanged)
+    const rentTotal = isDailyMode ? rentPerPeriod : rentPerPeriod * durationNum;
     const grandTotal = rentTotal;
-    const perInstalment = durationNum > 0 ? Math.floor(grandTotal / durationNum) : 0;
-    const instalmentRem = durationNum > 0 ? grandTotal % durationNum : 0;
+    const perInstalment = isDailyMode ? grandTotal : (durationNum > 0 ? Math.floor(grandTotal / durationNum) : 0);
+    const instalmentRem = isDailyMode ? 0 : (durationNum > 0 ? grandTotal % durationNum : 0);
     const hasCalc = rentPerPeriod > 0 && durationNum > 0;
 
     // ── Rebuild schedule ───────────────────────────────────────────────────────
     useEffect(() => {
         if (!hasCalc || grandTotal <= 0 || durationNum <= 0) { setSchedule([]); return; }
-        const base = Math.floor(grandTotal / durationNum);
-        const rem = grandTotal % durationNum;
+
         if (isDailyMode) {
+            // ── Single rental due after N days from startDate ──────────────
             const [sy, sm, sd] = startDate.split("-").map(Number);
-            setSchedule(Array.from({ length: durationNum }, (_, i) => {
-                const date = new Date(sy, sm - 1, sd);
-                date.setDate(date.getDate() + i);
-                const dueDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-                return { _id: `slot_${i}`, month: `Day ${i + 1}`, dueDate, amount: base + (i < rem ? 1 : 0), status: "pending", updatedAt: new Date().toISOString().slice(0, 10) };
-            }));
+            const date = new Date(sy, sm - 1, sd);
+            date.setDate(date.getDate() + durationNum);
+            const dueDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+            setSchedule([{
+                _id: "slot_0",
+                month: `Day ${durationNum}`,
+                dueDate,
+                amount: grandTotal,
+                status: "pending",
+                updatedAt: new Date().toISOString().slice(0, 10),
+            }]);
         } else {
+            // ── Monthly schedule (unchanged) ───────────────────────────────────
+            const base = Math.floor(grandTotal / durationNum);
+            const rem = grandTotal % durationNum;
             const [sy, sm, sd] = startDate.split("-").map(Number);
             setSchedule(Array.from({ length: durationNum }, (_, i) => {
                 const { y, m, d } = addMonthsToYMD(sy, sm - 1, sd, i);
@@ -1629,60 +1740,6 @@ export default function PatientForm({ onSuccess, user }) {
         if (schedule.length > 0) setMachineReturnDate(schedule[schedule.length - 1].dueDate);
     }, [schedule]);
 
-
-    // useEffect(() => {
-    //     const checkAuth = async () => {
-    //         const token = localStorage.getItem("token");
-
-    //         if (!token) {
-    //             router.replace("/login");
-    //             return;
-    //         }
-
-    //         try {
-    //             const res = await fetch("/api/auth/verify-token", {
-    //                 method: "POST",
-    //                 headers: {
-    //                     "Content-Type": "application/json",
-    //                     Authorization: `Bearer ${token}`,
-    //                     "x-api-key": process.env.NEXT_PUBLIC_API_KEY,
-    //                 },
-    //             });
-
-    //             const data = await res.json();
-
-    //             if (!data.success) {
-    //                 localStorage.removeItem("token");
-    //                 router.replace("/login");
-    //                 return;
-    //             }
-
-    //             const role = data.user.role;
-    //             setUser(data.user);
-
-    //             // 🔥 ROLE BASED REDIRECT
-    //             if (role === "Admin1") {
-    //                 return;
-    //             } else if (role === "employee") {
-    //                 return;
-    //             } else {
-    //                 localStorage.removeItem("token");
-    //                 router.replace("/login");
-    //             }
-
-    //         } catch (err) {
-    //             console.log("Token verify error:", err);
-    //             localStorage.removeItem("token");
-    //             router.replace("/login");
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-
-    //     checkAuth();
-    // }, [router]);
-
-    // ── Summary values ─────────────────────────────────────────────────────────
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -1773,9 +1830,8 @@ export default function PatientForm({ onSuccess, user }) {
         }
         if (s === 3) {
             if (!duration) e.duration = "Please select a rental duration";
-            if (!rentPerPeriod || rentPerPeriod <= 0) e.perPeriodRent = `Enter the ${isDailyMode ? "per day" : "per month"} rent amount`;
+            if (!rentPerPeriod || rentPerPeriod <= 0) e.perPeriodRent = `Enter the ${isDailyMode ? "per period" : "per month"} rent amount`;
             if (security < 0) e.securityAmount = "Security amount cannot be negative";
-            // ✅ FIX: use `e` not `errors` for paymentMode and paymentAcc
             if (!paymentMode) e.paymentMode = "Select payment mode";
             if (paymentMode === "online" && !paymentAcc.trim()) e.paymentAcc = "Enter account / UPI details";
             if (!startDate) e.startDate = "Please select a start date";
@@ -2217,17 +2273,20 @@ export default function PatientForm({ onSuccess, user }) {
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <FieldLabel required>Rent per {isDailyMode ? "day" : isMonthMode ? "month" : "period"}</FieldLabel>
+                                            <FieldLabel required>Rent {isDailyMode ? `(due after ${durationNum} day${durationNum > 1 ? "s" : ""})` : isMonthMode ? "per month" : "per period"}</FieldLabel>
                                             <div className="relative">
                                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">₹</span>
-                                                <TextInput type="number" placeholder={isDailyMode ? "e.g. 500" : "e.g. 4000"} min="0" step="1"
+                                                <TextInput type="number" placeholder={isDailyMode ? "e.g. 2000" : "e.g. 4000"} min="0" step="1"
                                                     value={perPeriodRent} onChange={e => setPerPeriodRent(e.target.value)}
                                                     error={errors.perPeriodRent} className="pl-7" />
                                             </div>
                                             <ErrorMsg msg={errors.perPeriodRent} />
                                             {rentPerPeriod > 0 && durationNum > 0 && (
                                                 <p className="mt-1 text-[10px] text-teal-600 font-medium">
-                                                    {fmt(rentPerPeriod)} × {durationNum} {isDailyMode ? "day" : "month"}{durationNum > 1 ? "s" : ""} = {fmt(rentTotal)}
+                                                    {isDailyMode
+                                                        ? `${fmt(rentPerPeriod)} due after ${durationNum} day${durationNum > 1 ? "s" : ""}`
+                                                        : `${fmt(rentPerPeriod)} × ${durationNum} month${durationNum > 1 ? "s" : ""} = ${fmt(rentTotal)}`
+                                                    }
                                                 </p>
                                             )}
                                         </div>
@@ -2248,7 +2307,12 @@ export default function PatientForm({ onSuccess, user }) {
                                 {rentPerPeriod > 0 && (
                                     <div className="rounded-xl border border-slate-200 bg-slate-50/70 divide-y divide-slate-100 overflow-hidden">
                                         <div className="flex justify-between items-center px-4 py-2.5">
-                                            <span className="text-xs font-semibold text-slate-500">Rent ({fmt(rentPerPeriod)} × {durationNum || "—"} {isDailyMode ? "days" : "months"})</span>
+                                            <span className="text-xs font-semibold text-slate-500">
+                                                {isDailyMode
+                                                    ? `Rent (due after ${durationNum || "—"} day${durationNum > 1 ? "s" : ""})`
+                                                    : `Rent (${fmt(rentPerPeriod)} × ${durationNum || "—"} months)`
+                                                }
+                                            </span>
                                             <span className="text-sm font-bold font-mono text-slate-700">{fmt(rentTotal)}</span>
                                         </div>
                                         <div className="flex justify-between items-center px-4 py-3 bg-teal-50">
@@ -2256,8 +2320,10 @@ export default function PatientForm({ onSuccess, user }) {
                                                 <p className="text-sm font-bold text-teal-800">Grand Total</p>
                                                 {durationNum > 0 && grandTotal > 0 && (
                                                     <p className="text-[10px] text-teal-600 font-medium mt-0.5">
-                                                        ÷ {durationNum} {isDailyMode ? "days" : "months"} = {fmt(perInstalment)}/instalment
-                                                        {instalmentRem > 0 && ` (+₹1 first ${instalmentRem})`}
+                                                        {isDailyMode
+                                                            ? `1 rental · due on ${fmtDateShort(schedule[0]?.dueDate)}`
+                                                            : `÷ ${durationNum} month${durationNum > 1 ? "s" : ""} = ${fmt(perInstalment)}/rental${instalmentRem > 0 ? ` (+₹1 first ${instalmentRem})` : ""}`
+                                                        }
                                                     </p>
                                                 )}
                                             </div>
@@ -2269,7 +2335,7 @@ export default function PatientForm({ onSuccess, user }) {
                                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                                     </svg>
-                                                    Security deposit (refundable · not in instalments)
+                                                    Security deposit (refundable · not in rentals)
                                                 </span>
                                                 <span className="text-sm font-bold font-mono text-emerald-700">{fmt(security)}</span>
                                             </div>
@@ -2290,12 +2356,17 @@ export default function PatientForm({ onSuccess, user }) {
                                                 </span>
                                             </FieldLabel>
                                             <TextInput type="date" value={startDate} onChange={e => setStartDate(e.target.value)} error={errors.startDate} />
-                                            <p className="mt-1 text-[10px] text-slate-400">{isDailyMode ? "Daily due dates start from this date." : "Each month's due date follows this day."}</p>
+                                            <p className="mt-1 text-[10px] text-slate-400">
+                                                {isDailyMode
+                                                    ? `Payment due ${durationNum} day${durationNum > 1 ? "s" : ""} after this date.`
+                                                    : "Each month's due date follows this day."
+                                                }
+                                            </p>
                                         </div>
                                         <div>
                                             <FieldLabel>Machine return date <span className="ml-1 text-amber-500 font-bold normal-case tracking-normal text-[10px]">auto: last due date</span></FieldLabel>
                                             <TextInput type="date" value={machineReturnDate} onChange={e => setMachineReturnDate(e.target.value)} />
-                                            <p className="mt-1 text-[10px] text-slate-400">Auto-set to last instalment date. Adjust if needed.</p>
+                                            <p className="mt-1 text-[10px] text-slate-400">Auto-set to last rental date. Adjust if needed.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -2303,10 +2374,9 @@ export default function PatientForm({ onSuccess, user }) {
                                 {hasCalc && (
                                     <div className="flex flex-wrap gap-2">
                                         <InfoChip label="Duration" value={durationLabel} color="violet" />
-                                        <InfoChip label="Per instalment" value={fmt(perInstalment)} color="teal" />
                                         <InfoChip label="Grand total" value={fmt(grandTotal)} color="rose" />
                                         {security > 0 && <InfoChip label="Security" value={fmt(security)} color="emerald" />}
-                                        {nextBillingDate && <InfoChip label="First billing" value={fmtDateShort(nextBillingDate)} color="amber" />}
+                                        {nextBillingDate && <InfoChip label="Due date" value={fmtDateShort(nextBillingDate)} color="amber" />}
                                         {machineReturnDate && <InfoChip label="Return date" value={fmtDateShort(machineReturnDate)} color="sky" />}
                                     </div>
                                 )}
@@ -2318,9 +2388,13 @@ export default function PatientForm({ onSuccess, user }) {
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                             <p className="text-xs text-teal-700 leading-relaxed">
-                                                <span className="font-bold">{durationNum} instalment{durationNum > 1 ? "s" : ""} · {fmt(perInstalment)}/instalment · {fmt(grandTotal)} grand total</span>.{" "}
-                                                {isDailyMode ? `Daily billing from ${fmtDateShort(startDate)}.` : `Due on the ${startDate.split("-")[2].replace(/^0/, "")}th of each month.`}
-                                                {instalmentRem > 0 && ` First ${instalmentRem} instalment${instalmentRem > 1 ? "s" : ""} are ₹1 more.`}
+                                                {isDailyMode
+                                                    ? <span className="font-bold">1 rental · {fmt(grandTotal)} due on {fmtDateShort(schedule[0]?.dueDate)} ({durationNum} day{durationNum > 1 ? "s" : ""} from start).</span>
+                                                    : <><span className="font-bold">{durationNum} rental{durationNum > 1 ? "s" : ""} · {fmt(perInstalment)}/rental · {fmt(grandTotal)} grand total</span>.{" "}
+                                                        {`Due on the ${startDate.split("-")[2].replace(/^0/, "")}th of each month.`}
+                                                        {instalmentRem > 0 && ` First ${instalmentRem} rental${instalmentRem > 1 ? "s" : ""} are ₹1 more.`}
+                                                    </>
+                                                }
                                             </p>
                                         </div>
                                         <InstalmentTable schedule={schedule} onToggle={toggleStatus} isDailyMode={isDailyMode} />
@@ -2344,7 +2418,6 @@ export default function PatientForm({ onSuccess, user }) {
                                         <ReviewRow label="Date of Birth" value={fmtDateShort(dob)} />
                                         <ReviewRow label="Age" value={age ? `${age} yrs` : "—"} />
                                         <ReviewRow label="Address" value={address || "—"} />
-                                        {/* ✅ ADDED: Google Review status in review */}
                                         <ReviewRow label="Google Review" badge={review ? "yes" : "no"} />
                                     </div>
                                 </div>
@@ -2353,11 +2426,9 @@ export default function PatientForm({ onSuccess, user }) {
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Assignment</p>
                                     <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 divide-y divide-slate-100">
-                                        {/* ✅ FIXED: doctorName now includes otherSource when "others" */}
                                         <ReviewRow label="Referred By" value={doctorName} />
                                         <ReviewRow label="Branch" value={selectedBranch || "—"} />
                                         <ReviewRow label="Machine" value={machineName} />
-                                        {/* ✅ FIXED: employeeName now includes otherEmployee when "others" */}
                                         <ReviewRow label="Installed By" value={employeeName} />
                                         {accessories.filter(a => a.name.trim()).length > 0
                                             ? accessories.filter(a => a.name.trim()).map((a, i) => (
@@ -2373,14 +2444,13 @@ export default function PatientForm({ onSuccess, user }) {
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Rental Details</p>
                                     <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 divide-y divide-slate-100">
                                         <ReviewRow label="Duration" value={durationLabel} />
-                                        <ReviewRow label={`Rent per ${isDailyMode ? "day" : "month"}`} value={fmt(rentPerPeriod)} />
+                                        <ReviewRow label={isDailyMode ? `Rent (due after ${durationNum} days)` : "Rent per month"} value={fmt(rentPerPeriod)} />
                                         <ReviewRow label="Grand Total" value={fmt(grandTotal)} />
-                                        <ReviewRow label="Per Instalment" value={`${fmt(perInstalment)}${instalmentRem > 0 ? ` (+₹1 first ${instalmentRem})` : ""}`} />
+                                        {!isDailyMode && <ReviewRow label="Per Rental" value={`${fmt(perInstalment)}${instalmentRem > 0 ? ` (+₹1 first ${instalmentRem})` : ""}`} />}
                                         {security > 0 && <ReviewRow label="Security (refundable)" value={fmt(security)} />}
-                                        {/* ✅ ADDED: Payment mode & account details in review */}
                                         <ReviewRow label="Payment Mode" value={paymentModeLabel} />
                                         <ReviewRow label="Start Date" value={fmtDateShort(startDate)} />
-                                        <ReviewRow label="Rental Ends" value={rentalEndDate ? fmtDateShort(rentalEndDate) : "—"} />
+                                        <ReviewRow label={isDailyMode ? "Payment Due On" : "Rental Ends"} value={rentalEndDate ? fmtDateShort(rentalEndDate) : "—"} />
                                         {machineReturnDate && <ReviewRow label="Machine Return" value={fmtDateShort(machineReturnDate)} />}
                                     </div>
                                 </div>
@@ -2414,10 +2484,10 @@ export default function PatientForm({ onSuccess, user }) {
                                     ))}
                                 </div>
 
-                                {/* ── Instalment schedule ── */}
+                                {/* ── Rental schedule ── */}
                                 {schedule.length > 0 && (
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Instalment Schedule Preview</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Rental Schedule Preview</p>
                                         <InstalmentTable schedule={schedule} onToggle={null} isDailyMode={isDailyMode} />
                                     </div>
                                 )}
