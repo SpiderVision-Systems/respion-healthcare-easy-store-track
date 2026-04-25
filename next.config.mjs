@@ -22,4 +22,7 @@ export default withPWA({
     register: true,
     skipWaiting: true,
   },
+
+  // 👇 IMPORTANT for Next 16 + Turbopack compatibility
+  turbopack: {},
 });
