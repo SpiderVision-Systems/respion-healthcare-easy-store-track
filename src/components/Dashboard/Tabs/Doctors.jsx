@@ -121,20 +121,14 @@ function DoctorForm({ initial = {}, onSave, onCancel, saving }) {
     const isEdit = !!initial.name;
     const [form, setForm] = useState({
         name: initial.name || "",
-        specialty: initial.specialty || "",
-        email: initial.email || "",
-        phone: initial.phone || "",
-        hospitalName: initial.hospitalName || "",
+
     });
     const set = (k) => (v) => setForm(f => ({ ...f, [k]: v }));
 
     return (
         <div className="p-6 flex flex-col gap-4">
             <FormField label="Full Name" value={form.name} onChange={set("name")} />
-            <FormField label="Specialty" value={form.specialty} onChange={set("specialty")} />
-            <FormField label="Email" type="email" value={form.email} onChange={set("email")} />
-            <FormField label="Phone" type="tel" value={form.phone} onChange={set("phone")} />
-            <FormField label="hospitalName" value={form.hospitalName} onChange={set("hospitalName")} />
+
             <div className="flex justify-end gap-3 pt-2">
                 <button
                     onClick={onCancel}
@@ -233,10 +227,7 @@ export default function DoctorPatientManager() {
             const formatted = data.map(d => ({
                 id: d._id,
                 name: d.name,
-                specialty: d.specialization,
-                email: d.email,
-                phone: d.phone,
-                hospitalName: d.hospitalName
+
             }));
             setDoctors(formatted);
             if (formatted.length > 0) {
@@ -301,13 +292,13 @@ export default function DoctorPatientManager() {
                 await fetch("/api/doctors", {
                     method: "PUT",
                     headers: { "Content-Type": "application/json", "x-api-key": process.env.NEXT_PUBLIC_API_KEY },
-                    body: JSON.stringify({ id: editingDoctor.id, name: form.name, email: form.email, phone: form.phone, specialization: form.specialty, hospitalName: form.hospitalName })
+                    body: JSON.stringify({ id: editingDoctor.id, name: form.name })
                 });
             } else {
                 await fetch("/api/doctors", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "x-api-key": process.env.NEXT_PUBLIC_API_KEY },
-                    body: JSON.stringify({ name: form.name, email: form.email, phone: form.phone, specialization: form.specialty, hospitalName: form.hospitalName })
+                    body: JSON.stringify({ name: form.name })
                 });
             }
             await fetchDoctors();
@@ -456,7 +447,7 @@ export default function DoctorPatientManager() {
                                 <Avatar name={doc.name} size="sm" />
                                 <div className="flex-1 min-w-0">
                                     <div className="text-sm font-medium text-gray-800 truncate">{doc.name}</div>
-                                    <div className="text-xs text-gray-400 truncate">{doc.specialty}</div>
+
                                 </div>
                                 {/* Show spinner on the doctor being deleted, otherwise show edit/delete */}
                                 {deletingId === doc.id ? (
@@ -490,12 +481,7 @@ export default function DoctorPatientManager() {
                                         <Avatar name={selectedDoctor.name} size="lg" />
                                         <div className="flex-1 min-w-0">
                                             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{selectedDoctor.name}</h1>
-                                            <p className="text-teal-600 text-sm mt-0.5 font-medium">{selectedDoctor.specialty}</p>
-                                            {selectedDoctor.hospitalName && (
-                                                <span className="inline-block mt-2 text-xs bg-teal-50 text-teal-700 border border-teal-200 px-3 py-0.5 rounded-full font-medium">
-                                                    {selectedDoctor.hospitalName}
-                                                </span>
-                                            )}
+
                                         </div>
                                     </div>
                                     <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -624,7 +610,7 @@ export default function DoctorPatientManager() {
 
             {/* Doctor Form Modal */}
             {showDoctorForm && (
-                <Modal title={editingDoctor ? "Edit Doctor" : "Add Doctor"} onClose={() => { if (!saving) { setShowDoctorForm(false); setEditingDoctor(null); } }}>
+                <Modal title={editingDoctor ? "Edit " : "Add "} onClose={() => { if (!saving) { setShowDoctorForm(false); setEditingDoctor(null); } }}>
                     <DoctorForm initial={editingDoctor || {}} onSave={saveDoctor} onCancel={() => { setShowDoctorForm(false); setEditingDoctor(null); }} saving={saving} />
                 </Modal>
             )}
