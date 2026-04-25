@@ -25,13 +25,16 @@ export const metadata = {
 };
 
 
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased select-none`}
-      >
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#000000" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+      </head>
+
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased select-none`}>
         {children}
       </body>
     </html>
