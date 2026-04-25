@@ -14,6 +14,8 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Respion HaH",
   description: "Respion HaH management system",
+  manifest: "/manifest.json",
+  themeColor: "#000000",
   icons: {
     icon: [
       { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
