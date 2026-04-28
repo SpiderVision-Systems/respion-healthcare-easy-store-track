@@ -88,7 +88,7 @@ export default function AdminPage() {
     const renderContent = () => {
         switch (currentTab) {
             case "dashboard":
-                return <Dashboard />;
+                return <Dashboard user={user} />;
             case "machines":
                 return <MachineManager />;
             case 'doctors':

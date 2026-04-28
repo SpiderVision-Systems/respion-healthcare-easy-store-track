@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ClipboardList, History, LogOut, CheckCircle2, Clock, Wrench } from "lucide-react";
+import { ClipboardList, History, LogOut, CheckCircle2, Clock, Wrench, View } from "lucide-react";
 import HistoryView from "./HistoryView";
 import PatientForm from "../form/page";
+import PatientsTable from "@/components/Dashboard/Tabs/Dashboard";
 
 export default function EmployeePage() {
     const router = useRouter();
@@ -108,6 +109,7 @@ export default function EmployeePage() {
                     {[
                         { key: "new", label: "New Records", Icon: ClipboardList },
                         { key: "history", label: "History", Icon: History },
+                        { key: 'dashboard', label: "Dashboard", Icon: View }
                     ].map(({ key, label, Icon }) => (
                         <button
                             key={key}
@@ -118,15 +120,15 @@ export default function EmployeePage() {
                                 }`}
                         >
                             <Icon size={15} />
-                            <span className="hidden xs:inline sm:inline">{label}</span>
-                            <span className="inline xs:hidden sm:hidden">{key === "new" ? "New" : "History"}</span>
+                            <span className="hidden xs:inline sm:inline capitalize">{label}</span>
+                            <span className="inline xs:hidden sm:hidden capitalize">{key}</span>
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* ── Content ── */}
-            <div className="flex-1 px-4 py-5 max-w-7xl mx-auto w-full">
+            <div className="flex-1 px-4 py-5 max-w-9xl mx-auto w-full">
 
                 {tab === "new" && (
                     <div className="card-enter">
@@ -137,6 +139,12 @@ export default function EmployeePage() {
                 {tab === "history" && (
                     <div className="card-enter">
                         <HistoryView user={user} />
+                    </div>
+                )}
+
+                {tab === "dashboard" && (
+                    <div className="card-enter">
+                        <PatientsTable user={user} />
                     </div>
                 )}
             </div>

@@ -3272,7 +3272,10 @@ function TableRow({ r, index, onClick, onMarkReturned }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function PatientsTable() {
+export default function PatientsTable({ user }) {
+
+    console.log("user", user);
+
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [typeFilter, setTypeFilter] = useState("all");
@@ -3419,9 +3422,11 @@ export default function PatientsTable() {
                                 <Download size={14} className="text-emerald-700" />
                                 <span className="hidden sm:inline text-emerald-800 font-semibold">Download</span>
                             </button>
-                            <Link href="/form" className="flex items-center gap-1.5 bg-teal-600 text-white rounded-xl px-3 py-2 text-xs font-bold shadow hover:bg-teal-700 transition-colors">
-                                <Plus size={14} /> <span className="hidden sm:inline">Add Patient</span>
-                            </Link>
+                            {user?.role === 'Admin1' &&
+                                <Link href="/form" className="flex items-center gap-1.5 bg-teal-600 text-white rounded-xl px-3 py-2 text-xs font-bold shadow hover:bg-teal-700 transition-colors">
+                                    <Plus size={14} /> <span className="hidden sm:inline">Add Patient</span>
+                                </Link>
+                            }
                             <span className="hidden sm:inline text-xs text-gray-400 shrink-0 ml-1">{filtered.length} / {records.length}</span>
                         </div>
                     </div>
