@@ -3288,6 +3288,7 @@ export default function PatientsTable({ user }) {
     const [showDownloadModal, setShowDownloadModal] = useState(false);
     const [uninstallTarget, setUninstallTarget] = useState(null);
     const [renewTarget, setRenewTarget] = useState(null);
+    const [searchInput, setSearchInput] = useState("");
 
     const markReturned = (patientId) => {
         const raw = patients.find(p => p._id === patientId);
@@ -3373,7 +3374,9 @@ export default function PatientsTable({ user }) {
     const footerCollected = filtered.reduce((s, r) => s + r.totalPaidAmt, 0);
     const footerPending = filtered.reduce((s, r) => s + r.pendingAmt, 0);
     const alertCount = stats.dueSoon || stats.returnSoon || stats.overdue;
-
+    const handleSearch = () => {
+        setSearch(searchInput);
+    };
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             <header className="bg-white border-b border-slate-200 shadow-sm shrink-0 z-30 sticky top-0">
@@ -3388,7 +3391,7 @@ export default function PatientsTable({ user }) {
                                 <p className="text-xs text-gray-400 hidden sm:block">Machine rental &amp; payment tracker</p>
                             </div>
                         </div>
-                        <div className="relative flex-1 sm:max-w-sm sm:ml-2">
+                        {/* <div className="relative flex-1 sm:max-w-sm sm:ml-2">
                             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" /></svg>
                             <input
                                 className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-50"
@@ -3396,6 +3399,44 @@ export default function PatientsTable({ user }) {
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
                             />
+                        </div> */}
+
+                        <div className="flex items-center gap-2 flex-1 sm:max-w-sm sm:ml-2">
+
+                            <div className="relative flex-1">
+                                <svg
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"
+                                    />
+                                </svg>
+
+                                <input
+                                    className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-50"
+                                    placeholder="Search patient, doctor, machine, address…"
+                                    value={searchInput}
+                                    onChange={(e) => setSearchInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") handleSearch();
+                                    }}
+                                />
+                            </div>
+                            {searchInput &&
+                                <button
+                                    onClick={handleSearch}
+                                    className="px-4 py-2 text-sm bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition"
+                                >
+                                    Search
+                                </button>
+                            }
+
                         </div>
                         <div className="flex items-center gap-2 sm:ml-auto">
                             <button

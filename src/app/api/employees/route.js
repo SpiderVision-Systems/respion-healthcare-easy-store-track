@@ -83,21 +83,70 @@ export async function POST(req) {
 }
 
 // PUT /api/employees
+// export async function PUT(req) {
+//     try {
+//         await connectToDatabase();
+//         const body = await req.json();
+//         const { id, ...updateData } = body;
+
+//         if (!id) return new Response(JSON.stringify({ error: "Employee ID required" }), { status: 400 });
+
+//         const updatedEmployee = await Employee.findByIdAndUpdate(id, updateData, { returnDocument: 'after' });
+//         if (!updatedEmployee) return new Response(JSON.stringify({ error: "Employee not found" }), { status: 404 });
+
+//         return new Response(JSON.stringify(updatedEmployee), { status: 200 });
+//     } catch (error) {
+//         console.error("PUT Employee Error:", error);
+//         return new Response(JSON.stringify({ error: "Failed to update employee" }), { status: 500 });
+//     }
+// }
+
+
 export async function PUT(req) {
     try {
         await connectToDatabase();
+
         const body = await req.json();
         const { id, ...updateData } = body;
 
-        if (!id) return new Response(JSON.stringify({ error: "Employee ID required" }), { status: 400 });
+        if (!id) {
+            return new Response(
+                JSON.stringify({ error: "Employee ID required" }),
+                { status: 400 }
+            );
+        }
 
-        const updatedEmployee = await Employee.findByIdAndUpdate(id, updateData, { returnDocument: 'after' });
-        if (!updatedEmployee) return new Response(JSON.stringify({ error: "Employee not found" }), { status: 404 });
+        // 🔐 If password is being updated → hash it
+        if (updateData.password) {
+            updateData.password = await bcrypt.hash(updateData.password, 10);
+        }
 
-        return new Response(JSON.stringify(updatedEmployee), { status: 200 });
+        const updatedEmployee = await Employee.findByIdAndUpdate(
+            id,
+            updateData,
+            { returnDocument: 'after' }
+        );
+
+        if (!updatedEmployee) {
+            return new Response(
+                JSON.stringify({ error: "Employee not found" }),
+                { status: 404 }
+            );
+        }
+
+        // ❌ remove password from response
+        const safeEmployee = updatedEmployee.toObject();
+        delete safeEmployee.password;
+
+        return new Response(JSON.stringify(safeEmployee), { status: 200 });
+
     } catch (error) {
         console.error("PUT Employee Error:", error);
-        return new Response(JSON.stringify({ error: "Failed to update employee" }), { status: 500 });
+
+        return new Response(
+            JSON.stringify({ error: "Failed to update employee" }),
+            { status: 500 }
+        );
     }
 }
 
